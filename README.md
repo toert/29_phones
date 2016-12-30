@@ -1,5 +1,7 @@
-# 29_phones
+# Microservice for Search Index of Phone Numbers
 
-# Copyright
+{TODO. There will be project description}
 
-Code was written for solving a task #29 of training course for web-developers - [DEVMAN.org](https://devman.org)
+# Project Goals
+
+The code is written for educational purposes. Training course for web-developers - [DEVMAN.org](https://devman.org)
