@@ -2,14 +2,15 @@ from sqlalchemy import Table, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
 from sqlalchemy.orm import sessionmaker
+from os import getenv
 
 TABLES_TO_CLONE = ['orders']
 
 
 def make_session(db_uri):
     engine = create_engine(db_uri, echo=False, convert_unicode=True)
-    Session = sessionmaker(bind=engine)
-    return Session(), engine
+    session_class = sessionmaker(bind=engine)
+    return session_class(), engine
 
 
 def quick_mapper(table_name):
@@ -32,10 +33,10 @@ def pull_data(from_db_uri, to_db_uri, tables):
         new_record = quick_mapper(table)
         columns = table.columns.keys()
         for record in source.query(table).all():
-            data = dict(
+            all_columns_of_row = dict(
                 [(str(column), getattr(record, column)) for column in columns]
             )
-            destination.merge(new_record(**data))
+            destination.merge(new_record(**all_columns_of_row))
     destination.commit()
 
 
