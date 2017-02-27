@@ -3,7 +3,7 @@ from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, load_only
 
 engine = create_engine(getenv('FINAL_DB_URI'))
 metadata = MetaData(bind=engine, reflect=True)
@@ -22,10 +22,16 @@ def format_phone(entry_phone, result_phone_lenght=10):
 
 
 def fill_new_column():
-    for row in session.query(Orders).all():
-        row.formatted_contact_phone = format_phone(row.contact_phone)
-        session.add(row)
-        session.commit()
+    all_orders_from_db = session.query(Orders).options(load_only('id', 'contact_phone')).all()
+    objects = (
+        dict(
+            id=order.id,
+            formatted_contact_phone=format_phone(order.contact_phone)
+        )
+        for order in all_orders_from_db
+    )
+    session.bulk_update_mappings(Orders, objects)
+    session.commit()
 
 
 if __name__ == "__main__":
