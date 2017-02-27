@@ -8,8 +8,7 @@ from sqlalchemy.orm import sessionmaker, load_only
 engine = create_engine(getenv('FINAL_DB_URI'))
 metadata = MetaData(bind=engine, reflect=True)
 base = declarative_base(bind=engine, metadata=metadata)
-session_maker = sessionmaker(engine)
-session = session_maker()
+session = sessionmaker(engine)()
 
 
 class Orders(base):
