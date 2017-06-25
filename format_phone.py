@@ -1,4 +1,5 @@
 import re
+import time
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -20,18 +21,24 @@ def format_phone(entry_phone, result_phone_lenght=10):
     return phone_without_symbols[-result_phone_lenght:]
 
 
-def fill_new_column():
-    all_orders_from_db = session.query(Orders).options(load_only('id', 'contact_phone')).all()
+def fill_formatted_phone_column(orders):
     objects = (
         dict(
             id=order.id,
             formatted_contact_phone=format_phone(order.contact_phone)
         )
-        for order in all_orders_from_db
+        for order in orders
     )
     session.bulk_update_mappings(Orders, objects)
     session.commit()
 
 
 if __name__ == "__main__":
-    fill_new_column()
+    while True:
+        try:
+            raw_orders_query = session.query(Orders).options(load_only('id', 'contact_phone')).filter(Orders.formatted_contact_phone.is_(None))
+            fill_formatted_phone_column(raw_orders_query.yield_per(getenv('MAX_LOADED_ROWS_AMOUNT')))
+            time.sleep(getenv('SLEEP_TIME'))
+        except KeyboardInterrupt:
+            print('Exit was initialized by user')
+            break
