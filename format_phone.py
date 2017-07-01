@@ -1,6 +1,7 @@
 import re
 import time
 from os import getenv
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import MetaData
@@ -42,3 +43,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print('Exit was initialized by user')
             break
+        except DBAPIError:
+            print('Lost connection, next try after {} seconds'.format(getenv('SLEEP_TIME')))
+            session.rollback()
+            time.sleep(getenv('SLEEP_TIME'))
